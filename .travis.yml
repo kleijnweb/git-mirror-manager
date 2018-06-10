@@ -13,9 +13,6 @@ before_script:
   - mkdir -p $GOPATH/bin
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
-script:
-  - make test
-
 after_success:
   - curl --request POST "https://goreportcard.com/checks" --data "repo=github.com/kleijnweb/git-mirror-manager"
 
