@@ -1,0 +1,11 @@
+language: go
+
+go:
+  - 1.10.1
+
+script:
+    - make test
+
+after_success:
+  - curl --request POST "https://goreportcard.com/checks" --data "repo=github.com/kleijnweb/git-mirror-manager"
+

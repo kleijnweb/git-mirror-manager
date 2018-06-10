@@ -22,7 +22,7 @@ func newConfig() *config {
 	return &config{
 		distDir:              envOrDefault("GIT_MIRROR_DISTDIR", "/opt/data/dist"),
 		mirrorBaseDir:        envOrDefault("GIT_MIRROR_BASEDIR", "/opt/data/mirrors"),
-		mirrorUpdateInterval: envOrDefault("GIT_MIRROR_UPDATE_INTERVAL", "0 * * * *"),
+		mirrorUpdateInterval: envOrDefault("GIT_MIRROR_UPDATE_INTERVAL", "0 0 * * *"),
 		managerAddr:          envOrDefault("GIT_MIRROR_MANAGER_ADDR", ":8080"),
 	}
 }

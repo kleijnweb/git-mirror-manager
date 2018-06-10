@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
 	"github.com/gorilla/mux"
 	"time"
+  "bufio"
 )
 
 func NewManagerServer() *managerServer {
@@ -66,14 +66,16 @@ func (s *managerServer) ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *managerServer) createMirror(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		s.handleServingError(w, &Error{err, errUser})
-		return
-	}
-	if err := s.manager.add(string(body)); err != nil {
-		s.handleServingError(w, err)
-	}
+  scanner := bufio.NewScanner(r.Body)
+  for scanner.Scan() {
+    if err := s.manager.add(scanner.Text()); err != nil {
+      s.handleServingError(w, err)
+    }
+  }
+
+  if err := scanner.Err(); err != nil {
+    s.handleServingError(w, newError("failed reading request body", errUser))
+  }
 }
 
 func (s *managerServer) deleteMirror(w http.ResponseWriter, r *http.Request) {

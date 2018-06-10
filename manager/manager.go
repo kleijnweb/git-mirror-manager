@@ -31,7 +31,7 @@ func (m *manager) loadFromDisk(config *config) *Error {
 	for _, nf := range namespaceDirs {
 		nsName := nf.Name()
 		nsPath := config.mirrorBaseDir + "/" + nsName
-		log.Printf("Handling ns '%s'", nsName)
+		log.Printf("Handling namespace '%s'", nsName)
 		repoDirs, err := ioutil.ReadDir(nsPath)
 		if err != nil {
 			return &Error{err, errFilesystem}
@@ -55,7 +55,6 @@ func (m *manager) loadFromDisk(config *config) *Error {
 				return err
 			}
 			m.mirrors[mirror.Name] = mirror
-			log.Printf("Initialized mirror '%s'", mirror.Name)
 		}
 	}
 

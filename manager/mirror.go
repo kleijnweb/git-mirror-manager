@@ -56,6 +56,8 @@ func (m *mirror) init(config *config) *Error {
 
 	m.createCron()
 
+  log.Printf("Initialized mirror '%s'", m.Name)
+
 	return nil
 }
 
@@ -66,9 +68,11 @@ func (m *mirror) destroy() *Error {
 
 func (m *mirror) update() *Error {
 	log.Printf("Updating '%s'", m.Name)
-	if _, err := gitFetchPrune(m.Uri) ;err != nil {
+	if _, err := gitFetchPrune(m.Path) ;err != nil {
 		return err
 	}
+
+  log.Printf("Updating '%s' completed", m.Name)
 	return nil
 }
 
@@ -84,7 +88,7 @@ func (m *mirror) assertValidRemote(uri string) *Error {
 func (m *mirror) clone() *Error {
 	log.Infof("Cloning '%s'", m.Name)
 	_, err := gitCreateMirror(m.Uri, m.Path)
-	log.Infof("Cloned '%s'", m.Name)
+	log.Infof("Cloning '%s' completed", m.Name)
 	return err
 }
 

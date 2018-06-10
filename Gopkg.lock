@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  branch = "master"
-  name = "github.com/gophermonk/mockfunction"
-  packages = ["."]
-  revision = "3b5ed11b46c5d15607dddf8018f6d5d15eaa8009"
-
-[[projects]]
   name = "github.com/gorilla/context"
   packages = ["."]
   revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
@@ -49,6 +43,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5587c419e7c9129d474232e69984a073a668584160b69954f256d2b099b67bfa"
+  inputs-digest = "b5566de43a8e990a7bbd0f57005cb62704be91d3992ff21bc3ef0784743275e8"
   solver-name = "gps-cdcl"
   solver-version = 1
