@@ -7,9 +7,9 @@ before_install:
   - go get github.com/mattn/goveralls
 
 before_script:
-  - make vendor
   - mkdir -p $GOPATH/bin
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+  - make vendor
 
 script:
   - $GOPATH/bin/goveralls -service=travis-ci
