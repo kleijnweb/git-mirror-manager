@@ -1,12 +1,12 @@
 package manager
 
 import (
-	"net/http"
+	"bufio"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
+	"net/http"
 	"time"
-  "bufio"
 )
 
 func NewManagerServer() *managerServer {
@@ -66,16 +66,16 @@ func (s *managerServer) ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *managerServer) createMirror(w http.ResponseWriter, r *http.Request) {
-  scanner := bufio.NewScanner(r.Body)
-  for scanner.Scan() {
-    if err := s.manager.add(scanner.Text()); err != nil {
-      s.handleServingError(w, err)
-    }
-  }
+	scanner := bufio.NewScanner(r.Body)
+	for scanner.Scan() {
+		if err := s.manager.add(scanner.Text()); err != nil {
+			s.handleServingError(w, err)
+		}
+	}
 
-  if err := scanner.Err(); err != nil {
-    s.handleServingError(w, newError("failed reading request body", errUser))
-  }
+	if err := scanner.Err(); err != nil {
+		s.handleServingError(w, newError("failed reading request body", errUser))
+	}
 }
 
 func (s *managerServer) deleteMirror(w http.ResponseWriter, r *http.Request) {

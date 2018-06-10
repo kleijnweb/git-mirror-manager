@@ -1,10 +1,11 @@
 package manager
 
 import (
-	"testing"
-	"reflect"
 	"os"
+	"reflect"
+	"testing"
 )
+
 var defaultsTests = []struct {
 	field        string
 	defaultValue string

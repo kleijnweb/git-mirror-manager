@@ -1,8 +1,8 @@
 package manager
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 )
 

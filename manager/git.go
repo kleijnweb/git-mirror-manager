@@ -1,11 +1,11 @@
 package manager
 
 import (
-	"strings"
-	"os/exec"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"os/exec"
 	"path"
+	"strings"
 )
 
 var gitDirMaker = os.MkdirAll

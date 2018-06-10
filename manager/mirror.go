@@ -1,14 +1,15 @@
 package manager
 
 import (
-	"strings"
 	"github.com/robfig/cron"
-	"os"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"strings"
 )
 
 type RemoveAller func(path string) error
-var  mirrorPathRemover RemoveAller = os.RemoveAll
+
+var mirrorPathRemover RemoveAller = os.RemoveAll
 
 type mirror struct {
 	Uri            string
@@ -56,7 +57,7 @@ func (m *mirror) init(config *config) *Error {
 
 	m.createCron()
 
-  log.Printf("Initialized mirror '%s'", m.Name)
+	log.Printf("Initialized mirror '%s'", m.Name)
 
 	return nil
 }
@@ -68,17 +69,17 @@ func (m *mirror) destroy() *Error {
 
 func (m *mirror) update() *Error {
 	log.Printf("Updating '%s'", m.Name)
-	if _, err := gitFetchPrune(m.Path) ;err != nil {
+	if _, err := gitFetchPrune(m.Path); err != nil {
 		return err
 	}
 
-  log.Printf("Updating '%s' completed", m.Name)
+	log.Printf("Updating '%s' completed", m.Name)
 	return nil
 }
 
 func (m *mirror) assertValidRemote(uri string) *Error {
 	log.Printf("Testing '%s'", uri)
-	if _, err := gitLsRemoteTags(uri) ;err != nil {
+	if _, err := gitLsRemoteTags(uri); err != nil {
 		return err
 	}
 	log.Info("Test passed")

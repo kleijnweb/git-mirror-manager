@@ -1,10 +1,10 @@
 package manager
 
 import (
-	"testing"
+	"errors"
 	"io/ioutil"
 	"os"
-	"errors"
+	"testing"
 )
 
 var tMkTmp = func(t *testing.T) string {
@@ -32,7 +32,7 @@ var gitExecFailingTestData = []struct {
 	{"githiiiiiib123.com", []string{"ls-remote", "--tags", "https://githiiiiiib123.com/sirupsen/logrus"}},
 }
 
-var withFailingGitDirMaker = func(t *testing.T, fn func(t *testing.T)([]byte, error)) {
+var withFailingGitDirMaker = func(t *testing.T, fn func(t *testing.T) ([]byte, error)) {
 	origDirMaker := gitDirMaker
 
 	gitDirMaker = func(path string, perm os.FileMode) error {
@@ -74,7 +74,7 @@ func TestGitExec(t *testing.T) {
 }
 
 func TestGitCreateMirror(t *testing.T) {
-	withFailingGitDirMaker(t, func(t *testing.T)([]byte, error) {
+	withFailingGitDirMaker(t, func(t *testing.T) ([]byte, error) {
 		return gitCreateMirror("https://github.com/sirupsen/logrus", tMkTmp(t))
 	})
 
@@ -85,7 +85,7 @@ func TestGitCreateMirror(t *testing.T) {
 }
 
 func TestGitCreateTagArchive(t *testing.T) {
-	withFailingGitDirMaker(t, func(t *testing.T)([]byte, error) {
+	withFailingGitDirMaker(t, func(t *testing.T) ([]byte, error) {
 		tmpDirName := tMkTmp(t)
 		gitCreateMirror("https://github.com/sirupsen/logrus", tmpDirName)
 		return gitCreateTagArchive("v1.0.0", tmpDirName)

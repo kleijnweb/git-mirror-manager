@@ -2,9 +2,9 @@ package manager
 
 import (
 	log "github.com/sirupsen/logrus"
-	"strings"
 	"io/ioutil"
 	"os/exec"
+	"strings"
 )
 
 type manager struct {
@@ -89,7 +89,7 @@ func (m *manager) add(uri string) *Error {
 }
 
 func (m *manager) remove(name string) *Error {
-	if ! m.has(name) {
+	if !m.has(name) {
 		return newError("mirror '"+name+"' does not exist", errNotFound)
 	}
 	log.Printf("Removing '%s'", name)
@@ -104,7 +104,7 @@ func (m *manager) remove(name string) *Error {
 }
 
 func (m *manager) update(name string) *Error {
-	if ! m.has(name) {
+	if !m.has(name) {
 		return newError("mirror '"+name+"' does not exist", errUser)
 	}
 	log.Printf("Updating '%s'", name)

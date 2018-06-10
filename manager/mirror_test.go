@@ -1,8 +1,8 @@
 package manager
 
 import (
-	"testing"
 	"strings"
+	"testing"
 )
 
 var uriToMirrorTestData = []struct {
@@ -17,14 +17,14 @@ var uriToMirrorTestData = []struct {
 
 // TODO: remove external dependency
 var validRemoteTestData = []struct {
-	name   string
+	name  string
 	uri   string
 	valid bool
 }{
 	{"docker-library/golang", "https://github.com/docker-library/golang.git", true},
-	{"some/repo-name","git@github.com/some/repo-name.git", false},
-	{"moby/moby","https://github.com/moby/moby", true},
-	{"the-namespace/the-reponame","https://github.com/the-namespace/the-reponame", false},
+	{"some/repo-name", "git@github.com/some/repo-name.git", false},
+	{"moby/moby", "https://github.com/moby/moby", true},
+	{"the-namespace/the-reponame", "https://github.com/the-namespace/the-reponame", false},
 }
 
 func TestMirrorNameFromUri(t *testing.T) {
@@ -43,8 +43,8 @@ func TestAssertValidRemote(t *testing.T) {
 	for _, tt := range validRemoteTestData {
 		t.Run(tt.name, func(t *testing.T) {
 			err := mirror.assertValidRemote(tt.uri)
-			if err != nil && tt.valid || err == nil && ! tt.valid {
-				t.Errorf("expected %v result, got %v", tt.valid, ! tt.valid)
+			if err != nil && tt.valid || err == nil && !tt.valid {
+				t.Errorf("expected %v result, got %v", tt.valid, !tt.valid)
 			}
 		})
 	}
@@ -72,7 +72,7 @@ func TestInitWillInitializeFields(t *testing.T) {
 	if mirror.UpdateInterval != config.mirrorUpdateInterval {
 		t.Errorf("expected update interval %s, got %s", mirror.UpdateInterval, config.mirrorUpdateInterval)
 	}
-	if ! strings.HasPrefix(mirror.Path, config.mirrorBaseDir) {
+	if !strings.HasPrefix(mirror.Path, config.mirrorBaseDir) {
 		t.Errorf("expected path to prefixed with %s, got %s", config.mirrorBaseDir, mirror.Path)
 	}
 }
