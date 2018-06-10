@@ -7,10 +7,6 @@ import (
 	"strings"
 )
 
-type RemoveAller func(path string) error
-
-var mirrorPathRemover RemoveAller = os.RemoveAll
-
 type mirror struct {
 	Uri            string
 	Name           string
@@ -109,7 +105,7 @@ func (m *mirror) createDists() *Error {
 
 func (m *mirror) removeData() *Error {
 	log.Infof("Removing directory '%s'", m.Path)
-	if err := mirrorPathRemover(m.Path); err != nil {
+	if err := os.RemoveAll(m.Path); err != nil {
 		return &Error{err, errFilesystem}
 	}
 	log.Infof("Done removing '%s'", m.Path)
