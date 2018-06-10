@@ -8,16 +8,16 @@ import (
 )
 
 type mirror struct {
-	Uri            string
+	URI            string
 	Name           string
 	Path           string
 	Cron           *cron.Cron
 	UpdateInterval string
 }
 
-// mirrorNameFromUri Creates a name from a Git uri.
+// mirrorNameFromURI Creates a name from a Git uri.
 // It will panic if the URI is not in the expected format.
-func mirrorNameFromUri(uri string) (name string) {
+func mirrorNameFromURI(uri string) (name string) {
 	parts := strings.Split(uri, "/")
 	name = parts[len(parts)-2]
 	name += "/" + parts[len(parts)-1]
@@ -26,11 +26,11 @@ func mirrorNameFromUri(uri string) (name string) {
 }
 
 func (m *mirror) init(config *config) *Error {
-	if m.Uri == "" {
+	if m.URI == "" {
 		return newError("mirror uri cannot be empty", errUser)
 	}
 
-	m.Name = mirrorNameFromUri(m.Uri)
+	m.Name = mirrorNameFromURI(m.URI)
 	m.UpdateInterval = config.mirrorUpdateInterval
 	m.Path = config.mirrorBaseDir + "/" + m.Name
 
@@ -38,7 +38,7 @@ func (m *mirror) init(config *config) *Error {
 
 	if _, err := os.Stat(m.Path); err != nil {
 		if os.IsNotExist(err) {
-			if err := m.assertValidRemote(m.Uri); err != nil {
+			if err := m.assertValidRemote(m.URI); err != nil {
 				return err
 			}
 			go func() {
@@ -84,13 +84,13 @@ func (m *mirror) assertValidRemote(uri string) *Error {
 
 func (m *mirror) clone() *Error {
 	log.Infof("Cloning '%s'", m.Name)
-	_, err := gitCreateMirror(m.Uri, m.Path)
+	_, err := gitCreateMirror(m.URI, m.Path)
 	log.Infof("Cloning '%s' completed", m.Name)
 	return err
 }
 
 func (m *mirror) createDists() *Error {
-	output, err := gitLsRemoteTags(m.Uri)
+	output, err := gitLsRemoteTags(m.URI)
 	if err != nil {
 		return err
 	}

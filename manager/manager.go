@@ -48,7 +48,7 @@ func (m *manager) loadFromDisk(config *config) *Error {
 				return &Error{err, errGitCommand}
 			}
 			mirror := &mirror{
-				Uri:  trimmedOutput,
+				URI:  trimmedOutput,
 				Path: fullPath,
 			}
 			if err := mirror.init(config); err != nil {
@@ -67,14 +67,14 @@ func (m *manager) has(name string) bool {
 }
 
 func (m *manager) add(uri string) *Error {
-	name := mirrorNameFromUri(uri)
+	name := mirrorNameFromURI(uri)
 
 	if m.has(name) {
 		return newError("mirror '"+name+"' already exists", errUser)
 	}
 
 	mirror := &mirror{
-		Uri:  uri,
+		URI:  uri,
 		Name: name,
 	}
 

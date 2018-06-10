@@ -9,16 +9,19 @@ import (
 	"time"
 )
 
-func NewManagerServer() *managerServer {
-	return &managerServer{}
+// NewServer creates a new Server
+func NewServer() *Server {
+	return &Server{}
 }
 
-type managerServer struct {
+// Server handles request/responses and delegates to the manager
+type Server struct {
 	manager *manager
 	addr    string
 }
 
-func (s *managerServer) Start() {
+// Start initialized the server and makes it listen for connections
+func (s *Server) Start() {
 	srv, err := s.configure(newConfig())
 
 	if err != nil {
@@ -30,14 +33,14 @@ func (s *managerServer) Start() {
 	}
 }
 
-func (s *managerServer) loggingMiddleware(next http.Handler) http.Handler {
+func (s *Server) loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.RequestURI)
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (s *managerServer) configure(config *config) (*http.Server, *Error) {
+func (s *Server) configure(config *config) (*http.Server, *Error) {
 	router := mux.NewRouter()
 	router.HandleFunc("/ping", s.ping).Methods("GET")
 	router.HandleFunc("/repo", s.createMirror).Methods("POST")
@@ -60,12 +63,12 @@ func (s *managerServer) configure(config *config) (*http.Server, *Error) {
 	return srv, nil
 }
 
-func (s *managerServer) ping(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "pong\n")
 }
 
-func (s *managerServer) createMirror(w http.ResponseWriter, r *http.Request) {
+func (s *Server) createMirror(w http.ResponseWriter, r *http.Request) {
 	scanner := bufio.NewScanner(r.Body)
 	for scanner.Scan() {
 		if err := s.manager.add(scanner.Text()); err != nil {
@@ -78,14 +81,14 @@ func (s *managerServer) createMirror(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *managerServer) deleteMirror(w http.ResponseWriter, r *http.Request) {
+func (s *Server) deleteMirror(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["namespace"] + "/" + mux.Vars(r)["name"]
 	if err := s.manager.remove(name); err != nil {
 		s.handleServingError(w, err)
 	}
 }
 
-func (s *managerServer) handleServingError(w http.ResponseWriter, err *Error) {
+func (s *Server) handleServingError(w http.ResponseWriter, err *Error) {
 	if err.code == errUser {
 		w.WriteHeader(http.StatusBadRequest)
 	} else if err.code == errNotFound {
@@ -97,6 +100,6 @@ func (s *managerServer) handleServingError(w http.ResponseWriter, err *Error) {
 	log.Print(err)
 }
 
-func (s *managerServer) handleStartupError(err *Error) {
+func (s *Server) handleStartupError(err *Error) {
 	log.Fatal(err)
 }

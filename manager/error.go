@@ -15,6 +15,7 @@ const (
 	errNotFound   = iota // The requested resource was not found
 )
 
+// Error wraps a standard to add an interpretable error code
 type Error struct {
 	err  error
 	code int
@@ -24,6 +25,7 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("%s [%d]", e.err.Error(), e.code)
 }
 
+// Log logs the error using logrus
 func (e *Error) Log() {
 	log.Error(e)
 }

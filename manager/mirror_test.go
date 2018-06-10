@@ -30,7 +30,7 @@ var validRemoteTestData = []struct {
 func TestMirrorNameFromUri(t *testing.T) {
 	for _, tt := range uriToMirrorTestData {
 		t.Run(tt.uri, func(t *testing.T) {
-			actual := mirrorNameFromUri(tt.uri)
+			actual := mirrorNameFromURI(tt.uri)
 			if actual != tt.expected {
 				t.Errorf("got %q, want %q", actual, tt.expected)
 			}
@@ -62,7 +62,7 @@ func TestInitWillFailWhenUriIsEmpty(t *testing.T) {
 }
 
 func TestInitWillInitializeFields(t *testing.T) {
-	mirror := &mirror{Uri: "http://example.org/namespace/name"}
+	mirror := &mirror{URI: "http://example.org/namespace/name"}
 	// Ignore errors for this test
 	config := &config{mirrorUpdateInterval: "fauxValue", mirrorBaseDir: "/some/path"}
 	mirror.init(config)

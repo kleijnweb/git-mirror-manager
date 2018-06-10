@@ -33,6 +33,11 @@ vendor: ## Runs dep ensure
 	esac ;\
 	touch $@
 
+checkstyle: ## Run tests
+	gofmt -s -w manager main.go
+	golint manager
+	golint main.go
+
 test: ## Run tests
 	GIT_TERMINAL_PROMPT=0 go test -v ./...
 

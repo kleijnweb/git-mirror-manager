@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	manager.NewManagerServer().Start()
+	manager.NewServer().Start()
 }
