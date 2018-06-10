@@ -8,13 +8,13 @@
 
 Dead-simple service for managing Git Mirrors, written in Go.
 
-# TODO
+# TODOs
 
-Tests, tests, tests
-Lock git operations using mutexes
-Better logging
-Recover from panics
-Create zip files
+* Tests, tests, tests
+* Lock operations using mutexes
+* Better logging
+* Recover from panics
+* Create zip files
 
 ## Features
 
