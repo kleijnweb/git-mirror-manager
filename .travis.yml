@@ -3,6 +3,12 @@ language: go
 go:
   - 1.10.1
 
+before_install:
+  - go get github.com/mattn/goveralls
+
+script:
+  - $GOPATH/bin/goveralls -service=travis-ci
+
 before_script:
   - mkdir -p $GOPATH/bin
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
@@ -13,3 +19,8 @@ script:
 after_success:
   - curl --request POST "https://goreportcard.com/checks" --data "repo=github.com/kleijnweb/git-mirror-manager"
 
+after_script:
+  - |
+    curl --silent https://github.com/kleijnweb/git-mirror-manager |\
+      grep -oP 'https://camo.githubusercontent.com/[0-9a-z]+/[0-9a-z]+' |\
+      xargs curl -X PURGE

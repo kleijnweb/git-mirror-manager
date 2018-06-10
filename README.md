@@ -6,7 +6,7 @@
 [![CodeClimate](https://codeclimate.com/github/kleijnweb/git-mirror-manager/badges/gpa.svg)](https://codeclimate.com/github/kleijnweb/git-mirror-manager)
 [![IssueCount](https://codeclimate.com/github/kleijnweb/git-mirror-manager/badges/issue_count.svg)](https://codeclimate.com/github/kleijnweb/git-mirror-manager)
 
-Dead-simple service for managing Git Mirrors, written in Go.
+Dead-simple service for managing Git mirrors, written in Go.
 
 # TODOs
 
@@ -22,7 +22,7 @@ Exposes a super simple API to add and delete git mirrors. Updates them periodica
 
 ### Prerequisites
 
-Requires the git binaries to be installed. Make sure git can find a private key to clone the upstreams.
+Requires the git binaries to be installed (included in Docker image). Make sure git can find a private key to clone the upstreams (not needed for public repos / HTTPS URIs).
 
 ### API
 
