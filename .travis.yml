@@ -6,17 +6,16 @@ go:
 before_install:
   - go get github.com/mattn/goveralls
 
-script:
-  - $GOPATH/bin/goveralls -service=travis-ci
-
 before_script:
+  - make vendor
   - mkdir -p $GOPATH/bin
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
-after_success:
-  - curl --request POST "https://goreportcard.com/checks" --data "repo=github.com/kleijnweb/git-mirror-manager"
+script:
+  - $GOPATH/bin/goveralls -service=travis-ci
 
 after_script:
+  - curl --request POST "https://goreportcard.com/checks" --data "repo=github.com/kleijnweb/git-mirror-manager"
   - |
     curl --silent https://github.com/kleijnweb/git-mirror-manager |\
       grep -oP 'https://camo.githubusercontent.com/[0-9a-z]+/[0-9a-z]+' |\
