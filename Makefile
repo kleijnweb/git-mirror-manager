@@ -38,7 +38,7 @@ checkstyle: ## Run tests
 	golint manager
 	golint main.go
 
-test: ## Run tests
+test: vendor ## Run tests
 	GIT_TERMINAL_PROMPT=0 go test -v ./...
 
 run: ## Runs git-mirror-manager without building
