@@ -12,10 +12,10 @@ var defaultsTests = []struct {
 	customValue  string
 	envKey       string
 }{
-	{"distDir", "/opt/data/dist", "/opt/data/distSomethingElse", "GIT_MIRROR_DISTDIR"},
-	{"mirrorBaseDir", "/opt/data/mirrors", "/opt/data/mirrorsSomethingElse", "GIT_MIRROR_BASEDIR"},
-	{"mirrorUpdateInterval", "0 * * * *", "5 * * * *", "GIT_MIRROR_UPDATE_INTERVAL"},
-	{"managerAddr", ":8080", ":555", "GIT_MIRROR_MANAGER_ADDR"},
+	{"DistDir", "/opt/data/dist", "/opt/data/distSomethingElse", "GIT_MIRROR_DISTDIR"},
+	{"MirrorBaseDir", "/opt/data/mirrors", "/opt/data/mirrorsSomethingElse", "GIT_MIRROR_BASEDIR"},
+	{"MirrorUpdateInterval", "0 * * * *", "5 * * * *", "GIT_MIRROR_UPDATE_INTERVAL"},
+	{"ManagerAddr", ":8080", ":555", "GIT_MIRROR_MANAGER_ADDR"},
 }
 
 func TestNewConfigReadsEnv(t *testing.T) {
@@ -23,7 +23,7 @@ func TestNewConfigReadsEnv(t *testing.T) {
 	for _, tt := range defaultsTests {
 		t.Run(tt.field, func(t *testing.T) {
 			os.Setenv(tt.envKey, tt.customValue)
-			config := newConfig()
+			config := NewConfig()
 			st := reflect.ValueOf(config).Elem()
 
 			v := st.FieldByName(tt.field)
@@ -37,7 +37,7 @@ func TestNewConfigReadsEnv(t *testing.T) {
 }
 
 func TestNewConfigDefaults(t *testing.T) {
-	config := newConfig()
+	config := NewConfig()
 	st := reflect.ValueOf(config).Elem()
 	for _, tt := range defaultsTests {
 		t.Run(tt.field, func(t *testing.T) {

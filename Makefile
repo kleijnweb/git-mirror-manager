@@ -16,12 +16,15 @@ GO_LDFLAGS_STATIC=-ldflags "-w $(CTIMEVAR) -extldflags -static"
 
 print-%: ; @echo $*=$($*)
 
-.PHONY: help vendor build test benchmark run
+.PHONY: help build test benchmark run after_test
 
 default: test build
 
 build: vendor ## Builds git-mirror-manager
-	CGO_ENABLED=0 GOOS=linux go build -a ${GO_LDFLAGS_STATIC} .
+	CGO_ENABLED=0 GOOS=linux go build -a ${GO_LDFLAGS_STATIC} cmd/
+
+mocks: vendor ## Generate mocks
+	cd manager && mockery -all -inpkg manager
 
 vendor: ## Runs dep ensure
 	dep ensure
@@ -33,16 +36,24 @@ vendor: ## Runs dep ensure
 	esac ;\
 	touch $@
 
-checkstyle: ## Run tests
+checkstyle: ## Run lint and fmt
 	gofmt -s -w manager main.go
 	golint manager
 	golint main.go
 
-test: vendor ## Run tests
+test: mocks vendor ## Run tests
 	GIT_TERMINAL_PROMPT=0 go test -v ./...
+
+cover: mocks vendor ## Run tests with code coverage
+	GIT_TERMINAL_PROMPT=0 go test -covermode=count -coverprofile=cover.out ./... >/dev/null
+	sed -ir '/\/mock_.*\.go:/d' ./cover.out
+	go tool cover -func=cover.out
 
 run: ## Runs git-mirror-manager without building
 	go run ./main.go
+
+after_test: ## Clean after testing
+	find . -name mock_*.go | xargs rm
 
 # Magic as explained here: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 
