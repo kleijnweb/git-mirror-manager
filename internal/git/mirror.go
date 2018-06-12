@@ -1,6 +1,7 @@
 package git
 
 import (
+  "github.com/kleijnweb/git-mirror-manager/internal"
   "github.com/kleijnweb/git-mirror-manager/internal/util"
   "github.com/robfig/cron"
   log "github.com/sirupsen/logrus"
@@ -18,10 +19,10 @@ type Mirror struct {
   fs             util.FileSystemUtil
 }
 
-func NewMirror(uri string, baseDir string, updateInterval string, cmd CommandRunner, fs util.FileSystemUtil, ) (*Mirror, *util.ApplicationError) {
+func NewMirror(uri string, baseDir string, updateInterval string, cmd CommandRunner, fs util.FileSystemUtil, ) (*Mirror, *internal.ApplicationError) {
 
   if uri == "" {
-    return nil, util.NewError("mirror uri cannot be empty", util.ErrUser)
+    return nil, internal.NewError("mirror uri cannot be empty", internal.ErrUser)
   }
 
   name := MirrorNameFromURI(uri)
@@ -66,12 +67,12 @@ func MirrorNameFromURI(uri string) (name string) {
   return
 }
 
-func (m *Mirror) Destroy() *util.ApplicationError {
+func (m *Mirror) Destroy() *internal.ApplicationError {
   m.cron.Stop()
   return m.removeData()
 }
 
-func (m *Mirror) Update() *util.ApplicationError {
+func (m *Mirror) Update() *internal.ApplicationError {
   log.Printf("Updating '%s'", m.Name)
   if err := m.cmd.fetchPrune(m.path); err != nil {
     return err
@@ -81,14 +82,14 @@ func (m *Mirror) Update() *util.ApplicationError {
   return nil
 }
 
-func (m *Mirror) clone() *util.ApplicationError {
+func (m *Mirror) clone() *internal.ApplicationError {
   log.Infof("Cloning '%s'", m.Name)
   err := m.cmd.createMirror(m.uri, m.path)
   log.Infof("Cloning '%s' completed", m.Name)
   return err
 }
 
-func (m *Mirror) createDists() *util.ApplicationError {
+func (m *Mirror) createDists() *internal.ApplicationError {
   output, err := m.cmd.lsRemoteTags(m.uri)
   if err != nil {
     return err
@@ -102,16 +103,16 @@ func (m *Mirror) createDists() *util.ApplicationError {
   return nil
 }
 
-func (m *Mirror) removeData() *util.ApplicationError {
+func (m *Mirror) removeData() *internal.ApplicationError {
   log.Infof("Removing directory '%s'", m.path)
   if err := os.RemoveAll(m.path); err != nil {
-    return &util.ApplicationError{err, util.ErrFilesystem}
+    return &internal.ApplicationError{err, internal.ErrFilesystem}
   }
   log.Infof("Done removing '%s'", m.path)
   return nil
 }
 
-func (m *Mirror) createCron() *util.ApplicationError {
+func (m *Mirror) createCron() *internal.ApplicationError {
   if strings.ToLower(m.updateInterval) == "false" {
     return nil
   }
@@ -121,14 +122,14 @@ func (m *Mirror) createCron() *util.ApplicationError {
       log.Error(err)
     }
   }); err != nil {
-    return &util.ApplicationError{err, util.ErrCron}
+    return &internal.ApplicationError{err, internal.ErrCron}
   }
 
   m.cron.Start()
   return nil
 }
 
-func (m *Mirror) assertValidRemote(uri string) *util.ApplicationError {
+func (m *Mirror) assertValidRemote(uri string) *internal.ApplicationError {
   log.Printf("Testing '%s'", uri)
   if _, err := m.cmd.lsRemoteTags(uri); err != nil {
     return err

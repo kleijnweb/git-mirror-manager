@@ -1,6 +1,7 @@
-package git
+package main
 
 import (
+  "github.com/kleijnweb/git-mirror-manager/mocks"
   "strings"
   "testing"
   "github.com/stretchr/testify/assert"
@@ -31,7 +32,7 @@ var validRemoteTestData = []struct {
 func TestMirrorNameFromUri(t *testing.T) {
   for _, tt := range uriToMirrorTestData {
     t.Run(tt.uri, func(t *testing.T) {
-      actual := mirrorNameFromURI(tt.uri)
+      actual := MirrorNameFromURI(tt.uri)
       assert.New(t).Equal(tt.expected, actual)
     })
   }
@@ -43,9 +44,9 @@ func TestAssertValidRemote(t *testing.T) {
       baseDir := "/some/path"
       path := baseDir+"/"+tt.name
       mirror, _ := NewMirror(
-        &Config{mirrorUpdateInterval: "fauxValue", mirrorBaseDir: baseDir},
+        &Config{MirrorUpdateInterval: "fauxValue", mirrorBaseDir: baseDir},
         tt.uri,
-        func() *mockGitCommandRunner {
+        func() *mocks.CommandRunner {
           mock := &mockGitCommandRunner{}
           mock.On("lsRemoteTags", tt.uri).Return("", nil)
           mock.On("createMirror", tt.uri, path).Return(nil)
@@ -70,10 +71,10 @@ func TestInitWillFailWhenUriIsEmpty(t *testing.T) {
     &mockFileSystemUtil{},
   )
   if err == nil {
-    t.Error("expected error, got nil")
+    t.Error("expected errors, got nil")
   }
   if err.code != errUser {
-    t.Errorf("expected error code %d, got %d", errUser, err.code)
+    t.Errorf("expected errors code %d, got %d", errUser, err.code)
   }
 }
 

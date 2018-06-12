@@ -4,8 +4,8 @@ import (
   "bufio"
   "fmt"
   "github.com/gorilla/mux"
+  "github.com/kleijnweb/git-mirror-manager/internal"
   "github.com/kleijnweb/git-mirror-manager/internal/manager"
-  "github.com/kleijnweb/git-mirror-manager/internal/util"
   log "github.com/sirupsen/logrus"
   "net/http"
   "time"
@@ -31,7 +31,7 @@ func (s *Server) Start() {
   }
 
   if err := srv.ListenAndServe(); err != nil {
-    s.handleStartupError(&util.ApplicationError{err, util.ErrNet})
+    s.handleStartupError(internal.NewErrorUsingError(err, internal.ErrNet))
   }
 }
 
@@ -42,7 +42,7 @@ func (s *Server) loggingMiddleware(next http.Handler) http.Handler {
   })
 }
 
-func (s *Server) configure(config *manager.Config) (*http.Server, *util.ApplicationError) {
+func (s *Server) configure(config *manager.Config) (*http.Server, *internal.ApplicationError) {
   router := mux.NewRouter()
   router.HandleFunc("/ping", s.ping).Methods("GET")
   router.HandleFunc("/repo", s.createMirror).Methods("POST")
@@ -75,7 +75,7 @@ func (s *Server) createMirror(w http.ResponseWriter, r *http.Request) {
   }
 
   if err := scanner.Err(); err != nil {
-    s.handleServingError(w, util.NewError("failed reading request body", util.ErrUser))
+    s.handleServingError(w, internal.NewError("failed reading request body", internal.ErrUser))
   }
 }
 
@@ -86,10 +86,10 @@ func (s *Server) deleteMirror(w http.ResponseWriter, r *http.Request) {
   }
 }
 
-func (s *Server) handleServingError(w http.ResponseWriter, err *util.ApplicationError) {
-  if err.Code == util.ErrUser {
+func (s *Server) handleServingError(w http.ResponseWriter, err *internal.ApplicationError) {
+  if err.Code == internal.ErrUser {
     w.WriteHeader(http.StatusBadRequest)
-  } else if err.Code == util.ErrNotFound {
+  } else if err.Code == internal.ErrNotFound {
     w.WriteHeader(http.StatusNotFound)
   } else {
     w.WriteHeader(http.StatusInternalServerError)
@@ -98,6 +98,6 @@ func (s *Server) handleServingError(w http.ResponseWriter, err *util.Application
   log.Print(err)
 }
 
-func (s *Server) handleStartupError(err *util.ApplicationError) {
+func (s *Server) handleStartupError(err *internal.ApplicationError) {
   log.Fatal(err)
 }

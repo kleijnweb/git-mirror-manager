@@ -1,7 +1,8 @@
-package manager
+package manager_test
 
 import (
-	"os"
+  "github.com/kleijnweb/git-mirror-manager/internal/manager"
+  "os"
 	"reflect"
 	"testing"
 )
@@ -23,7 +24,7 @@ func TestNewConfigReadsEnv(t *testing.T) {
 	for _, tt := range defaultsTests {
 		t.Run(tt.field, func(t *testing.T) {
 			os.Setenv(tt.envKey, tt.customValue)
-			config := NewConfig()
+			config := manager.NewConfig()
 			st := reflect.ValueOf(config).Elem()
 
 			v := st.FieldByName(tt.field)
@@ -37,7 +38,7 @@ func TestNewConfigReadsEnv(t *testing.T) {
 }
 
 func TestNewConfigDefaults(t *testing.T) {
-	config := NewConfig()
+	config := manager.NewConfig()
 	st := reflect.ValueOf(config).Elem()
 	for _, tt := range defaultsTests {
 		t.Run(tt.field, func(t *testing.T) {

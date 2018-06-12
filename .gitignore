@@ -1,4 +1,4 @@
 vendor
+mocks
 git-mirror-manager
-mock_*
 cover.out

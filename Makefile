@@ -21,10 +21,10 @@ print-%: ; @echo $*=$($*)
 default: test build
 
 build: vendor ## Builds git-mirror-manager
-	CGO_ENABLED=0 GOOS=linux go build -a ${GO_LDFLAGS_STATIC} cmd/
+	CGO_ENABLED=0 GOOS=linux go build -a ${GO_LDFLAGS_STATIC} ${PKG}
 
 mocks: vendor ## Generate mocks
-	cd manager && mockery -all -inpkg manager
+	mockery -all -dir internal
 
 vendor: ## Runs dep ensure
 	dep ensure
@@ -51,9 +51,6 @@ cover: mocks vendor ## Run tests with code coverage
 
 run: ## Runs git-mirror-manager without building
 	go run ./main.go
-
-after_test: ## Clean after testing
-	find . -name mock_*.go | xargs rm
 
 # Magic as explained here: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 
