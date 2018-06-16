@@ -1,10 +1,12 @@
-package main
+package git_test
 
 import (
   "github.com/kleijnweb/git-mirror-manager/mocks"
   "strings"
   "testing"
   "github.com/stretchr/testify/assert"
+  "github.com/kleijnweb/git-mirror-manager/gmm"
+  "github.com/kleijnweb/git-mirror-manager/gmm/git"
 )
 
 var uriToMirrorTestData = []struct {
@@ -32,7 +34,7 @@ var validRemoteTestData = []struct {
 func TestMirrorNameFromUri(t *testing.T) {
   for _, tt := range uriToMirrorTestData {
     t.Run(tt.uri, func(t *testing.T) {
-      actual := MirrorNameFromURI(tt.uri)
+      actual := git.MirrorNameFromURI(tt.uri)
       assert.New(t).Equal(tt.expected, actual)
     })
   }
@@ -42,57 +44,63 @@ func TestAssertValidRemote(t *testing.T) {
   for _, tt := range validRemoteTestData {
     t.Run(tt.name, func(t *testing.T) {
       baseDir := "/some/path"
-      path := baseDir+"/"+tt.name
-      mirror, _ := NewMirror(
-        &Config{MirrorUpdateInterval: "fauxValue", mirrorBaseDir: baseDir},
+      path := baseDir + "/" + tt.name
+      mirror, _ := git.NewMirror(
         tt.uri,
+        baseDir,
+        "fauxValue",
         func() *mocks.CommandRunner {
-          mock := &mockGitCommandRunner{}
+          mock := &mocks.CommandRunner{}
           mock.On("lsRemoteTags", tt.uri).Return("", nil)
           mock.On("createMirror", tt.uri, path).Return(nil)
           return mock
         }(),
-        func() *mockFileSystemUtil {
-          mock := &mockFileSystemUtil{}
+        func() *mocks.FileSystemUtil {
+          mock := &mocks.FileSystemUtil{}
           mock.On("directoryExists", path).Return(false)
           return mock
         }(),
       )
-      assert.New(t).Nil(mirror.assertValidRemote(tt.uri))
+      assert.New(t).Nil(mirror.AssertValidRemote(tt.uri))
     })
   }
 }
 
 func TestInitWillFailWhenUriIsEmpty(t *testing.T) {
-  _, err := NewMirror(
-    &Config{},
+  _, err := git.NewMirror(
     "",
-    &mockGitCommandRunner{},
-    &mockFileSystemUtil{},
+    "/baseuri",
+    "fauxvalue",
+    &mocks.CommandRunner{},
+    &mocks.FileSystemUtil{},
   )
   if err == nil {
     t.Error("expected errors, got nil")
   }
-  if err.code != errUser {
-    t.Errorf("expected errors code %d, got %d", errUser, err.code)
+  if err.Code() != gmm.ErrUser {
+    t.Errorf("expected errors code %d, got %d", gmm.ErrUser, err.Code())
   }
 }
 
 func TestInitWillInitializeFields(t *testing.T) {
-  config := &Config{mirrorUpdateInterval: "fauxValue", mirrorBaseDir: "/some/path"}
+
+  mirrorUpdateInterval := "fauxValue"
+  mirrorBaseDir := "/some/path"
+
   url := "http://example.org/namespace/Name"
   path := "/some/path/namespace/Name"
-  mirror, _ := NewMirror(
-    config,
+  mirror, _ := git.NewMirror(
     url,
-    func() *mockGitCommandRunner {
-      mock := &mockGitCommandRunner{}
+    mirrorBaseDir,
+    mirrorUpdateInterval,
+    func() *mocks.CommandRunner {
+      mock := &mocks.CommandRunner{}
       mock.On("lsRemoteTags", url).Return("", nil)
       mock.On("createMirror", url, path).Return(nil)
       return mock
     }(),
-    func() *mockFileSystemUtil {
-      mock := &mockFileSystemUtil{}
+    func() *mocks.FileSystemUtil {
+      mock := &mocks.FileSystemUtil{}
       mock.On("directoryExists", path).Return(false)
       return mock
     }(),
@@ -101,10 +109,10 @@ func TestInitWillInitializeFields(t *testing.T) {
   if mirror.Name == "" {
     t.Error("mirror Name was not initialized")
   }
-  if mirror.updateInterval != config.mirrorUpdateInterval {
-    t.Errorf("expected Update interval %s, got %s", mirror.updateInterval, config.mirrorUpdateInterval)
+  if mirror.UpdateInterval() != mirrorUpdateInterval {
+    t.Errorf("expected Update interval %s, got %s", mirror.UpdateInterval(), mirrorUpdateInterval)
   }
-  if !strings.HasPrefix(mirror.path, config.mirrorBaseDir) {
-    t.Errorf("expected path to prefixed with %s, got %s", config.mirrorBaseDir, mirror.path)
+  if !strings.HasPrefix(mirror.Path(), mirrorBaseDir) {
+    t.Errorf("expected path to be prefixed with %s, got %s", mirrorBaseDir, mirror.Path())
   }
 }

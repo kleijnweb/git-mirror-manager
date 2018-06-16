@@ -1,8 +1,8 @@
 package git
 
 import (
-  "github.com/kleijnweb/git-mirror-manager/internal"
-  "github.com/kleijnweb/git-mirror-manager/internal/util"
+  "github.com/kleijnweb/git-mirror-manager/gmm"
+  "github.com/kleijnweb/git-mirror-manager/gmm/util"
   "github.com/robfig/cron"
   log "github.com/sirupsen/logrus"
   "os"
@@ -19,10 +19,10 @@ type Mirror struct {
   fs             util.FileSystemUtil
 }
 
-func NewMirror(uri string, baseDir string, updateInterval string, cmd CommandRunner, fs util.FileSystemUtil, ) (*Mirror, *internal.ApplicationError) {
+func NewMirror(uri string, baseDir string, updateInterval string, cmd CommandRunner, fs util.FileSystemUtil, ) (*Mirror, gmm.ApplicationError) {
 
   if uri == "" {
-    return nil, internal.NewError("mirror uri cannot be empty", internal.ErrUser)
+    return nil, gmm.NewError("mirror uri cannot be empty", gmm.ErrUser)
   }
 
   name := MirrorNameFromURI(uri)
@@ -39,7 +39,7 @@ func NewMirror(uri string, baseDir string, updateInterval string, cmd CommandRun
   log.Infof("Expecting repository at '%m'", m.path)
 
   if ! m.fs.DirectoryExists(m.path) {
-    if err := m.assertValidRemote(m.uri); err != nil {
+    if err := m.AssertValidRemote(m.uri); err != nil {
       return nil, err
     }
     log.Infof("Repository '%m' does not exists yet", m.path)
@@ -57,6 +57,15 @@ func NewMirror(uri string, baseDir string, updateInterval string, cmd CommandRun
   return m, nil
 }
 
+func (m *Mirror) AssertValidRemote(uri string) gmm.ApplicationError {
+  log.Printf("Testing '%s'", uri)
+  if _, err := m.cmd.LsRemoteTags(uri); err != nil {
+    return err
+  }
+  log.Info("Test passed")
+  return nil
+}
+
 // MirrorNameFromURI Creates a Name from a Git uri.
 // It will panic if the uri is not in the expected format.
 func MirrorNameFromURI(uri string) (name string) {
@@ -67,14 +76,22 @@ func MirrorNameFromURI(uri string) (name string) {
   return
 }
 
-func (m *Mirror) Destroy() *internal.ApplicationError {
+func (m *Mirror) Destroy() gmm.ApplicationError {
   m.cron.Stop()
   return m.removeData()
 }
 
-func (m *Mirror) Update() *internal.ApplicationError {
+func (m *Mirror) UpdateInterval() string {
+  return m.updateInterval
+}
+
+func (m *Mirror) Path() string {
+  return m.path
+}
+
+func (m *Mirror) Update() gmm.ApplicationError {
   log.Printf("Updating '%s'", m.Name)
-  if err := m.cmd.fetchPrune(m.path); err != nil {
+  if err := m.cmd.FetchPrune(m.path); err != nil {
     return err
   }
 
@@ -82,20 +99,20 @@ func (m *Mirror) Update() *internal.ApplicationError {
   return nil
 }
 
-func (m *Mirror) clone() *internal.ApplicationError {
+func (m *Mirror) clone() gmm.ApplicationError {
   log.Infof("Cloning '%s'", m.Name)
-  err := m.cmd.createMirror(m.uri, m.path)
+  err := m.cmd.CreateMirror(m.uri, m.path)
   log.Infof("Cloning '%s' completed", m.Name)
   return err
 }
 
-func (m *Mirror) createDists() *internal.ApplicationError {
-  output, err := m.cmd.lsRemoteTags(m.uri)
+func (m *Mirror) createDists() gmm.ApplicationError {
+  output, err := m.cmd.LsRemoteTags(m.uri)
   if err != nil {
     return err
   }
   for _, tag := range strings.Split("\n", string(output)) {
-    err := m.cmd.createTagArchive(tag, m.path)
+    err := m.cmd.CreateTagArchive(tag, m.path)
     if err != nil {
       return err
     }
@@ -103,16 +120,16 @@ func (m *Mirror) createDists() *internal.ApplicationError {
   return nil
 }
 
-func (m *Mirror) removeData() *internal.ApplicationError {
+func (m *Mirror) removeData() gmm.ApplicationError {
   log.Infof("Removing directory '%s'", m.path)
   if err := os.RemoveAll(m.path); err != nil {
-    return &internal.ApplicationError{err, internal.ErrFilesystem}
+    return gmm.NewErrorUsingError(err, gmm.ErrFilesystem)
   }
   log.Infof("Done removing '%s'", m.path)
   return nil
 }
 
-func (m *Mirror) createCron() *internal.ApplicationError {
+func (m *Mirror) createCron() gmm.ApplicationError {
   if strings.ToLower(m.updateInterval) == "false" {
     return nil
   }
@@ -122,18 +139,9 @@ func (m *Mirror) createCron() *internal.ApplicationError {
       log.Error(err)
     }
   }); err != nil {
-    return &internal.ApplicationError{err, internal.ErrCron}
+    return gmm.NewErrorUsingError(err, gmm.ErrCron)
   }
 
   m.cron.Start()
-  return nil
-}
-
-func (m *Mirror) assertValidRemote(uri string) *internal.ApplicationError {
-  log.Printf("Testing '%s'", uri)
-  if _, err := m.cmd.lsRemoteTags(uri); err != nil {
-    return err
-  }
-  log.Info("Test passed")
   return nil
 }

@@ -24,7 +24,7 @@ build: vendor ## Builds git-mirror-manager
 	CGO_ENABLED=0 GOOS=linux go build -a ${GO_LDFLAGS_STATIC} ${PKG}
 
 mocks: vendor ## Generate mocks
-	mockery -all -dir internal
+	mockery -all -dir gmm
 
 vendor: ## Runs dep ensure
 	dep ensure

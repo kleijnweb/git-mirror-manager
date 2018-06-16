@@ -1,14 +1,14 @@
 package git
 
 import (
-  "github.com/kleijnweb/git-mirror-manager/internal"
-  "github.com/kleijnweb/git-mirror-manager/internal/util"
+  "github.com/kleijnweb/git-mirror-manager/gmm"
+  "github.com/kleijnweb/git-mirror-manager/gmm/util"
   log "github.com/sirupsen/logrus"
   "path"
 )
 
 type CommandError interface {
-  internal.ApplicationError
+  gmm.ApplicationError
 }
 
 type CommandRunner interface {
@@ -40,7 +40,7 @@ func (m *DefaultCommandRunner) FetchPrune(directory string) (CommandError) {
 
 func (m *DefaultCommandRunner) CreateMirror(uri string, dirPath string) (CommandError) {
   if err := m.Fs.Mkdir(path.Dir(dirPath)); err != nil {
-    return &internal.CategorizedError{err, internal.ErrFilesystem}
+    return gmm.NewErrorUsingError(err, gmm.ErrFilesystem)
   }
   _, err := m.Exec("", "clone", "--mirror", "--bare", uri, dirPath)
   return err
@@ -48,7 +48,7 @@ func (m *DefaultCommandRunner) CreateMirror(uri string, dirPath string) (Command
 
 func (m *DefaultCommandRunner) CreateTagArchive(tag string, dirPath string) (CommandError) {
   if err := m.Fs.Mkdir(dirPath + "/dist/"); err != nil {
-    return &internal.CategorizedError{err, internal.ErrFilesystem}
+    return gmm.NewErrorUsingError(err, gmm.ErrFilesystem)
   }
   _, err := m.Exec(dirPath, "archive", tag, "-o", dirPath+"/dist/"+tag+".zip")
   return err
@@ -59,7 +59,7 @@ func (m *DefaultCommandRunner) Exec(directory string, args ...string) (string, C
 
   if err != nil {
     log.Warn("Git said: " + stringOutput)
-    return "", &internal.CategorizedError{err, internal.ErrGitCommand}
+    return "", gmm.NewErrorUsingError(err, gmm.ErrFilesystem)
   }
 
   return stringOutput, nil

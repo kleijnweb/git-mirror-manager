@@ -1,4 +1,4 @@
-package internal
+package gmm
 
 import (
 	"errors"
@@ -16,16 +16,21 @@ const (
 
 type ApplicationError interface {
   error
+  Code() int
 }
 
 // CategorizedError wraps a standard errors to add an interpretable error code
 type CategorizedError struct {
 	Err  error
-	Code int
+	code int
 }
 
 func (e CategorizedError) Error() string {
-	return fmt.Sprintf("%s [%d]", e.Err.Error(), e.Code)
+  return fmt.Sprintf("%s [%d]", e.Err.Error(), e.code)
+}
+
+func (e CategorizedError) Code() int {
+  return e.code
 }
 
 func NewError(text string, code int) ApplicationError {

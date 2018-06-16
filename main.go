@@ -1,11 +1,11 @@
 package main
 
 import (
-  error2 "github.com/kleijnweb/git-mirror-manager/internal/errors"
-  "github.com/kleijnweb/git-mirror-manager/internal/git"
-  "github.com/kleijnweb/git-mirror-manager/internal/http"
-  "github.com/kleijnweb/git-mirror-manager/internal/manager"
-  "github.com/kleijnweb/git-mirror-manager/internal/util"
+  "github.com/kleijnweb/git-mirror-manager/gmm/git"
+  "github.com/kleijnweb/git-mirror-manager/gmm/http"
+  "github.com/kleijnweb/git-mirror-manager/gmm/manager"
+  "github.com/kleijnweb/git-mirror-manager/gmm/util"
+  "github.com/kleijnweb/git-mirror-manager/gmm"
 )
 
 // Container is a dead-simple DI container
@@ -49,7 +49,7 @@ func (c *Container) Manager() *manager.Manager {
   if nil == c.manager {
     c.manager = manager.NewManager(
       c.Config(),
-      func(uri string) (*git.Mirror, *error2.ApplicationError) {
+      func(uri string) (*git.Mirror, gmm.ApplicationError) {
         return git.NewMirror(
           uri,
           c.Config().MirrorBaseDir,

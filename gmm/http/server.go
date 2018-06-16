@@ -4,8 +4,8 @@ import (
   "bufio"
   "fmt"
   "github.com/gorilla/mux"
-  "github.com/kleijnweb/git-mirror-manager/internal"
-  "github.com/kleijnweb/git-mirror-manager/internal/manager"
+  "github.com/kleijnweb/git-mirror-manager/gmm"
+  "github.com/kleijnweb/git-mirror-manager/gmm/manager"
   log "github.com/sirupsen/logrus"
   "net/http"
   "time"
@@ -31,7 +31,7 @@ func (s *Server) Start() {
   }
 
   if err := srv.ListenAndServe(); err != nil {
-    s.handleStartupError(internal.NewErrorUsingError(err, internal.ErrNet))
+    s.handleStartupError(gmm.NewErrorUsingError(err, gmm.ErrNet))
   }
 }
 
@@ -42,7 +42,7 @@ func (s *Server) loggingMiddleware(next http.Handler) http.Handler {
   })
 }
 
-func (s *Server) configure(config *manager.Config) (*http.Server, *internal.ApplicationError) {
+func (s *Server) configure(config *manager.Config) (*http.Server, gmm.ApplicationError) {
   router := mux.NewRouter()
   router.HandleFunc("/ping", s.ping).Methods("GET")
   router.HandleFunc("/repo", s.createMirror).Methods("POST")
@@ -75,7 +75,7 @@ func (s *Server) createMirror(w http.ResponseWriter, r *http.Request) {
   }
 
   if err := scanner.Err(); err != nil {
-    s.handleServingError(w, internal.NewError("failed reading request body", internal.ErrUser))
+    s.handleServingError(w, gmm.NewError("failed reading request body", gmm.ErrUser))
   }
 }
 
@@ -86,10 +86,10 @@ func (s *Server) deleteMirror(w http.ResponseWriter, r *http.Request) {
   }
 }
 
-func (s *Server) handleServingError(w http.ResponseWriter, err *internal.ApplicationError) {
-  if err.Code == internal.ErrUser {
+func (s *Server) handleServingError(w http.ResponseWriter, err gmm.ApplicationError) {
+  if err.Code() == gmm.ErrUser {
     w.WriteHeader(http.StatusBadRequest)
-  } else if err.Code == internal.ErrNotFound {
+  } else if err.Code() == gmm.ErrNotFound {
     w.WriteHeader(http.StatusNotFound)
   } else {
     w.WriteHeader(http.StatusInternalServerError)
@@ -98,6 +98,6 @@ func (s *Server) handleServingError(w http.ResponseWriter, err *internal.Applica
   log.Print(err)
 }
 
-func (s *Server) handleStartupError(err *internal.ApplicationError) {
+func (s *Server) handleStartupError(err gmm.ApplicationError) {
   log.Fatal(err)
 }

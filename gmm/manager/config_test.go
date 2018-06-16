@@ -1,7 +1,7 @@
 package manager_test
 
 import (
-  "github.com/kleijnweb/git-mirror-manager/internal/manager"
+  "github.com/kleijnweb/git-mirror-manager/gmm/manager"
   "os"
 	"reflect"
 	"testing"

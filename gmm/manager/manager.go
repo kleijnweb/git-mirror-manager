@@ -1,22 +1,22 @@
 package manager
 
 import (
-  "github.com/kleijnweb/git-mirror-manager/internal"
-  "github.com/kleijnweb/git-mirror-manager/internal/git"
-  "github.com/kleijnweb/git-mirror-manager/internal/util"
+  "github.com/kleijnweb/git-mirror-manager/gmm"
+  "github.com/kleijnweb/git-mirror-manager/gmm/git"
+  "github.com/kleijnweb/git-mirror-manager/gmm/util"
   log "github.com/sirupsen/logrus"
   "io/ioutil"
 )
 
 type Manager struct {
-  mirrorFactory func(uri string) (*git.Mirror, *internal.ApplicationError)
+  mirrorFactory func(uri string) (*git.Mirror, gmm.ApplicationError)
   mirrors       map[string]*git.Mirror
   config        *Config
   cmd           git.CommandRunner
   fs            util.FileSystemUtil
 }
 
-func NewManager(config *Config, mirrorFactory func(uri string) (*git.Mirror, *internal.ApplicationError), cmd git.CommandRunner, fs util.FileSystemUtil) *Manager {
+func NewManager(config *Config, mirrorFactory func(uri string) (*git.Mirror, gmm.ApplicationError), cmd git.CommandRunner, fs util.FileSystemUtil) *Manager {
   return &Manager{
     mirrorFactory: mirrorFactory,
     config:        config,
@@ -31,11 +31,11 @@ func (m *Manager) Has(name string) bool {
   return ok
 }
 
-func (m *Manager) Add(uri string) *internal.ApplicationError {
+func (m *Manager) Add(uri string) gmm.ApplicationError {
   name := git.MirrorNameFromURI(uri)
 
   if m.Has(name) {
-    return internal.NewError("mirror '"+name+"' already exists", internal.ErrUser)
+    return gmm.NewError("mirror '"+name+"' already exists", gmm.ErrUser)
   }
 
   if err := m.Set(uri); err != nil {
@@ -45,7 +45,7 @@ func (m *Manager) Add(uri string) *internal.ApplicationError {
   return nil
 }
 
-func (m *Manager) Set(uri string) *internal.ApplicationError {
+func (m *Manager) Set(uri string) gmm.ApplicationError {
 
   if mirror, newErr := m.mirrorFactory(uri); newErr != nil {
     return newErr
@@ -57,9 +57,9 @@ func (m *Manager) Set(uri string) *internal.ApplicationError {
   return nil
 }
 
-func (m *Manager) Remove(name string) *internal.ApplicationError {
+func (m *Manager) Remove(name string) gmm.ApplicationError {
   if !m.Has(name) {
-    return internal.NewError("mirror '"+name+"' does not exist", internal.ErrNotFound)
+    return gmm.NewError("mirror '"+name+"' does not exist", gmm.ErrNotFound)
   }
   log.Printf("Removing '%s'", name)
 
@@ -72,21 +72,21 @@ func (m *Manager) Remove(name string) *internal.ApplicationError {
   return nil
 }
 
-func (m *Manager) Update(name string) *internal.ApplicationError {
+func (m *Manager) Update(name string) gmm.ApplicationError {
   if !m.Has(name) {
-    return internal.NewError("mirror '"+name+"' does not exist", internal.ErrUser)
+    return gmm.NewError("mirror '"+name+"' does not exist", gmm.ErrUser)
   }
   log.Printf("Updating '%s'", name)
   return nil
 }
 
 // Load existing mirrors from disk
-func (m *Manager) loadFromDisk(config *Config) *internal.ApplicationError {
+func (m *Manager) loadFromDisk(config *Config) gmm.ApplicationError {
 
   namespaceDirs, err := ioutil.ReadDir(config.MirrorBaseDir)
 
   if err != nil {
-    return &internal.ApplicationError{err, internal.ErrFilesystem}
+    return gmm.NewErrorUsingError(err, gmm.ErrFilesystem)
   }
 
   for _, nf := range namespaceDirs {
@@ -95,7 +95,7 @@ func (m *Manager) loadFromDisk(config *Config) *internal.ApplicationError {
     log.Printf("Handling namespace '%s'", nsName)
     repoDirs, err := ioutil.ReadDir(nsPath)
     if err != nil {
-      return &internal.ApplicationError{err, internal.ErrFilesystem}
+      return gmm.NewErrorUsingError(err, gmm.ErrFilesystem)
     }
 
     for _, f := range repoDirs {

@@ -1,7 +1,7 @@
 package util_test
 
 import (
-  "github.com/kleijnweb/git-mirror-manager/internal/util"
+  "github.com/kleijnweb/git-mirror-manager/gmm/util"
   "testing"
 )
 
