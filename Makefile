@@ -45,7 +45,7 @@ test: mocks vendor ## Run tests
 	GIT_TERMINAL_PROMPT=0 GOCACHE=off go test ${PACKAGES_LOCAL}
 
 cover: mocks vendor ## Run tests with code coverage
-	GIT_TERMINAL_PROMPT=0 go test ${PACKAGES_LOCAL} -covermode=count -coverprofile=cover.out ./... >/dev/null
+	GIT_TERMINAL_PROMPT=0 go test ${PACKAGES_LOCAL} -covermode=count -coverprofile=cover.out ./...
 	go tool cover -func=cover.out
 
 run: ## Runs git-mirror-manager without building

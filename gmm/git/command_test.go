@@ -21,7 +21,7 @@ func TestGitExec(t *testing.T) {
 
 	path := "/some/fauxpath"
 
-	mockExec.On("Exec", "cmd", path, "something", "--param1", "--param2").Return("", nil)
+	mockExec.On("Exec", "git", path, "something", "--param1", "--param2").Return("", nil)
 
 	if _, err := cmd.Exec(path, "something", "--param1", "--param2"); err != nil {
 		t.Errorf("unexpected errors: %s", err)
@@ -29,7 +29,7 @@ func TestGitExec(t *testing.T) {
 
 	path = "/some/other/fauxpath"
 
-	mockExec.On("Exec", "cmd", path, "something", "--param1", "--param2").Return("stderr output", errors.New("errors message"))
+	mockExec.On("Exec", "git", path, "something", "--param1", "--param2").Return("stderr output", errors.New("errors message"))
 
 	if _, err := cmd.Exec(path, "something", "--param1", "--param2"); err == nil {
 		t.Errorf("expected errors")
@@ -42,7 +42,7 @@ func TestGitCreateMirror(t *testing.T) {
 	uri := "https://github.com/sirupsen/logrus"
 	path := "/some/fauxpath"
 
-	mockExec.On("Exec", "cmd", "", "clone", "--mirror", "--bare", uri, path).Return("", nil)
+	mockExec.On("Exec", "git", "", "clone", "--mirror", "--bare", uri, path).Return("", nil)
 
 	if err := cmd.CreateMirror(uri, path); err != nil {
 		t.Errorf("unexpected errors: %s", err)
@@ -50,7 +50,7 @@ func TestGitCreateMirror(t *testing.T) {
 
 	path = "/some/other/fauxpath"
 
-	mockExec.On("Exec", "cmd", "", "clone", "--mirror", "--bare", uri, path).Return("stderr output", errors.New("errors message"))
+	mockExec.On("Exec", "git", "", "clone", "--mirror", "--bare", uri, path).Return("stderr output", errors.New("errors message"))
 
 	if err := cmd.CreateMirror(uri, path); err == nil {
 		t.Errorf("expected errors")
@@ -61,7 +61,7 @@ func TestGitCreateTagArchive(t *testing.T) {
 	cmd, _, mockExec := factory()
 	path := "/some/fauxpath"
 	tag := "v1.0.0"
-	mockExec.On("Exec", "cmd", path, "archive", tag, "-o", path+"/dist/"+tag+".zip").Return("", nil)
+	mockExec.On("Exec", "git", path, "archive", tag, "-o", path+"/dist/"+tag+".zip").Return("", nil)
 	if err := cmd.CreateTagArchive(tag, path); err != nil {
 		t.Errorf("unexpected errors: %s", err)
 	}
@@ -72,7 +72,7 @@ func TestGitLsRemoteTags(t *testing.T) {
 	expected := "lklk"
 
 	uri := "https://github.com/sirupsen/logrus"
-	mockExec.On("Exec", "cmd", "", "ls-remote", "--tags", uri).Return(expected, nil)
+	mockExec.On("Exec", "git", "", "ls-remote", "--tags", uri).Return(expected, nil)
 	output, err := cmd.LsRemoteTags(uri)
 	if err != nil {
 		t.Errorf("unexpected errors: %s", err)
@@ -84,7 +84,7 @@ func TestGitLsRemoteTags(t *testing.T) {
 func TestGitFetchPrune(t *testing.T) {
 	cmd, _, mockExec := factory()
 	path := "/some/fauxpath"
-	mockExec.On("Exec", "cmd", path, "fetch", "--prune").Return("", nil)
+	mockExec.On("Exec", "git", path, "fetch", "--prune").Return("", nil)
 	if err := cmd.FetchPrune(path); err != nil {
 		t.Errorf("unexpected errors: %s", err)
 	}
