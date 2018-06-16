@@ -23,11 +23,14 @@ func CreateUpdateCron(mirror *Mirror, interval string) (Cron, gmm.ApplicationErr
 		return nil, nil
 	}
 	c := cron.New()
-	if err := c.AddFunc(interval, func() {
-		if err := mirror.Update(); err != nil {
-			log.Error(err)
-		}
-	}); err != nil {
+
+  updateFn := func() {
+    if err := mirror.Update(); err != nil {
+      log.Error(err)
+    }
+  }
+
+	if err := c.AddFunc(interval, updateFn); err != nil {
 		return nil, gmm.NewErrorUsingError(err, gmm.ErrCron)
 	}
 

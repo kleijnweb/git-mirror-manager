@@ -121,7 +121,13 @@ func TestNewMirrorStartsCron(t *testing.T) {
 }
 
 func TestRemoveMirrorStopsCron(t *testing.T) {
-	mirror := NewTestMirror("http://example.com/some/repo", "/path")
-	mirror.Destroy()
-	cronMock.AssertCalled(t, "Stop")
+  mirror := NewTestMirror("http://example.com/some/repo", "/path")
+  mirror.Destroy()
+  cronMock.AssertCalled(t, "Stop")
+}
+
+func TestCanUpdate(t *testing.T) {
+  mirror := NewTestMirror("http://example.com/some/repo", "/path")
+  gitCommandRunnerMock.On("FetchPrune", "/path/some/repo").Return(nil)
+  mirror.Update()
 }
