@@ -10,7 +10,7 @@ Dead-simple service for managing Git mirrors, written in Go.
 
 # TODOs
 
-* Tests, tests, tests
+* Functional tests
 * Lock operations using mutexes
 * Better logging
 * Recover from panics

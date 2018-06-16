@@ -68,17 +68,31 @@ func TestGitCreateTagArchive(t *testing.T) {
 }
 
 func TestGitLsRemoteTags(t *testing.T) {
-	cmd, _, mockExec := factory()
-	expected := "lklk"
+  cmd, _, mockExec := factory()
+  expected := "lklk"
 
-	uri := "https://github.com/sirupsen/logrus"
-	mockExec.On("Exec", "git", "", "ls-remote", "--tags", uri).Return(expected, nil)
-	output, err := cmd.LsRemoteTags(uri)
-	if err != nil {
-		t.Errorf("unexpected errors: %s", err)
-	}
+  uri := "https://github.com/sirupsen/logrus"
+  mockExec.On("Exec", "git", "", "ls-remote", "--tags", uri).Return(expected, nil)
+  output, err := cmd.LsRemoteTags(uri)
+  if err != nil {
+    t.Errorf("unexpected errors: %s", err)
+  }
 
-	assert.New(t).Equal(expected, output, "they should be equal")
+  assert.New(t).Equal(expected, output, "they should be equal")
+}
+
+func TestGitGetRemote(t *testing.T) {
+  cmd, _, mockExec := factory()
+  expected := "lklk"
+
+  directory := "/some/path"
+  mockExec.On("Exec", "git", directory, "config", "--get", "remote.origin.url").Return(expected, nil)
+  output, err := cmd.GetRemote(directory)
+  if err != nil {
+    t.Errorf("unexpected errors: %s", err)
+  }
+
+  assert.New(t).Equal(expected, output, "they should be equal")
 }
 
 func TestGitFetchPrune(t *testing.T) {
