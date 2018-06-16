@@ -1,113 +1,109 @@
 package manager
 
 import (
-  "github.com/kleijnweb/git-mirror-manager/gmm"
-  "github.com/kleijnweb/git-mirror-manager/gmm/git"
-  "github.com/kleijnweb/git-mirror-manager/gmm/util"
-  log "github.com/sirupsen/logrus"
-  "io/ioutil"
+	"github.com/kleijnweb/git-mirror-manager/gmm"
+	"github.com/kleijnweb/git-mirror-manager/gmm/git"
+	"github.com/kleijnweb/git-mirror-manager/gmm/util"
+	log "github.com/sirupsen/logrus"
 )
 
+// Manager provides a simple interface to mirror management
 type Manager struct {
-  mirrorFactory func(uri string) (*git.Mirror, gmm.ApplicationError)
-  mirrors       map[string]*git.Mirror
-  config        *Config
-  cmd           git.CommandRunner
-  fs            util.FileSystemUtil
+	mirrorFactory func(uri string) (*git.Mirror, gmm.ApplicationError)
+	mirrors       map[string]*git.Mirror
+	cmd           git.CommandRunner
+	fs            util.FileSystemUtil
 }
 
-func NewManager(config *Config, mirrorFactory func(uri string) (*git.Mirror, gmm.ApplicationError), cmd git.CommandRunner, fs util.FileSystemUtil) *Manager {
-  return &Manager{
-    mirrorFactory: mirrorFactory,
-    config:        config,
-    mirrors:       make(map[string]*git.Mirror),
-    cmd:           cmd,
-    fs:            fs,
-  }
+// NewManager creates a new Manager struct
+func NewManager(mirrorFactory func(uri string) (*git.Mirror, gmm.ApplicationError), cmd git.CommandRunner, fs util.FileSystemUtil) *Manager {
+	return &Manager{
+		mirrorFactory: mirrorFactory,
+		mirrors:       make(map[string]*git.Mirror),
+		cmd:           cmd,
+		fs:            fs,
+	}
 }
 
-func (m *Manager) Has(name string) bool {
-  _, ok := m.mirrors[name]
-  return ok
+// HasName tests whether name corresponds to a known mirror
+func (m *Manager) HasName(name string) bool {
+	_, ok := m.mirrors[name]
+	return ok
 }
 
-func (m *Manager) Add(uri string) gmm.ApplicationError {
-  name := git.MirrorNameFromURI(uri)
+// AddByURI adds a new mirror, or fails if the name was already used
+func (m *Manager) AddByURI(uri string) gmm.ApplicationError {
+	name := git.MirrorNameFromURI(uri)
 
-  if m.Has(name) {
-    return gmm.NewError("mirror '"+name+"' already exists", gmm.ErrUser)
-  }
+	if m.HasName(name) {
+		return gmm.NewError("mirror '"+name+"' already exists", gmm.ErrUser)
+	}
 
-  if err := m.Set(uri); err != nil {
-    return err
-  }
+	if err := m.setByURI(uri); err != nil {
+		return err
+	}
 
-  return nil
+	return nil
 }
 
-func (m *Manager) Set(uri string) gmm.ApplicationError {
+// RemoveByName unregisters and destroys a mirror, or fails if the name is unknown
+func (m *Manager) RemoveByName(name string) gmm.ApplicationError {
+	if !m.HasName(name) {
+		return gmm.NewError("mirror '"+name+"' does not exist", gmm.ErrNotFound)
+	}
+	log.Printf("Removing '%s'", name)
 
-  if mirror, newErr := m.mirrorFactory(uri); newErr != nil {
-    return newErr
-  } else {
-    m.mirrors[mirror.Name] = mirror
-    log.Printf("Set remote '%s' using alias '%s'", uri, mirror.Name)
-  }
+	if err := m.mirrors[name].Destroy(); err != nil {
+		return err
+	}
 
-  return nil
+	delete(m.mirrors, name)
+
+	return nil
 }
 
-func (m *Manager) Remove(name string) gmm.ApplicationError {
-  if !m.Has(name) {
-    return gmm.NewError("mirror '"+name+"' does not exist", gmm.ErrNotFound)
-  }
-  log.Printf("Removing '%s'", name)
+// LoadFromDisk loads existing mirrors from disk
+func (m *Manager) LoadFromDisk(baseDir string) gmm.ApplicationError {
 
-  if err := m.mirrors[name].Destroy(); err != nil {
-    return err
-  }
+	namespaceDirs, err := m.fs.ReadDir(baseDir)
 
-  delete(m.mirrors, name)
+	if err != nil {
+		return gmm.NewErrorUsingError(err, gmm.ErrFilesystem)
+	}
 
-  return nil
+	for _, nf := range namespaceDirs {
+		nsName := nf.Name()
+		nsPath := baseDir + "/" + nsName
+		log.Printf("Handling namespace '%s'", nsName)
+		repoDirs, err := m.fs.ReadDir(nsPath)
+		if err != nil {
+			return gmm.NewErrorUsingError(err, gmm.ErrFilesystem)
+		}
+
+		for _, f := range repoDirs {
+			if remote, err := m.cmd.GetRemote(nsPath + "/" + f.Name()); err == nil {
+				if err := m.setByURI(remote); err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
-func (m *Manager) Update(name string) gmm.ApplicationError {
-  if !m.Has(name) {
-    return gmm.NewError("mirror '"+name+"' does not exist", gmm.ErrUser)
-  }
-  log.Printf("Updating '%s'", name)
-  return nil
-}
+func (m *Manager) setByURI(uri string) gmm.ApplicationError {
 
-// Load existing mirrors from disk
-func (m *Manager) loadFromDisk(config *Config) gmm.ApplicationError {
+	mirror, err := m.mirrorFactory(uri)
 
-  namespaceDirs, err := ioutil.ReadDir(config.MirrorBaseDir)
+	if err != nil {
+		return err
+	}
 
-  if err != nil {
-    return gmm.NewErrorUsingError(err, gmm.ErrFilesystem)
-  }
+	m.mirrors[mirror.Name] = mirror
+	log.Printf("Set remote '%s' using alias '%s'", uri, mirror.Name)
 
-  for _, nf := range namespaceDirs {
-    nsName := nf.Name()
-    nsPath := config.MirrorBaseDir + "/" + nsName
-    log.Printf("Handling namespace '%s'", nsName)
-    repoDirs, err := ioutil.ReadDir(nsPath)
-    if err != nil {
-      return gmm.NewErrorUsingError(err, gmm.ErrFilesystem)
-    }
-
-    for _, f := range repoDirs {
-      if remote, err := m.cmd.GetRemote(nsPath + "/" + f.Name()); err == nil {
-        if err := m.Set(remote); err != nil {
-          return err
-        }
-      } else {
-        return err
-      }
-    }
-  }
-
-  return nil
+	return nil
 }

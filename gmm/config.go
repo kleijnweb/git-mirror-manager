@@ -1,9 +1,10 @@
-package manager
+package gmm
 
 import (
 	"os"
 )
 
+// Config represents application configuration
 type Config struct {
 	MirrorBaseDir        string
 	MirrorUpdateInterval string
@@ -11,6 +12,7 @@ type Config struct {
 	DistDir              string
 }
 
+// NewConfig creates application config from environment variables
 func NewConfig() *Config {
 	envOrDefault := func(name, fallback string) string {
 		val := os.Getenv(name)

@@ -13,10 +13,11 @@ ifneq ($(GITUNTRACKEDCHANGES),)
 endif
 CTIMEVAR=-X $(PKG)/version.GITCOMMIT=$(GITCOMMIT) -X $(PKG)/version.VERSION=$(VERSION)
 GO_LDFLAGS_STATIC=-ldflags "-w $(CTIMEVAR) -extldflags -static"
+PACKAGES_LOCAL=$(shell go list ./... | grep -v mock)
 
 print-%: ; @echo $*=$($*)
 
-.PHONY: help build test benchmark run after_test
+.PHONY: help mocks build test run
 
 default: test build
 
@@ -37,16 +38,14 @@ vendor: ## Runs dep ensure
 	touch $@
 
 checkstyle: ## Run lint and fmt
-	gofmt -s -w manager main.go
-	golint manager
-	golint main.go
+	gofmt -s -w gmm main.go
+	golint ${PACKAGES_LOCAL}
 
 test: mocks vendor ## Run tests
-	GIT_TERMINAL_PROMPT=0 go test -v ./...
+	GIT_TERMINAL_PROMPT=0 GOCACHE=off go test ${PACKAGES_LOCAL}
 
 cover: mocks vendor ## Run tests with code coverage
-	GIT_TERMINAL_PROMPT=0 go test -covermode=count -coverprofile=cover.out ./... >/dev/null
-	sed -ir '/\/mock_.*\.go:/d' ./cover.out
+	GIT_TERMINAL_PROMPT=0 go test ${PACKAGES_LOCAL} -covermode=count -coverprofile=cover.out ./... >/dev/null
 	go tool cover -func=cover.out
 
 run: ## Runs git-mirror-manager without building

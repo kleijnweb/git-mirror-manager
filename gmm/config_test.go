@@ -1,8 +1,7 @@
-package manager_test
+package gmm
 
 import (
-  "github.com/kleijnweb/git-mirror-manager/gmm/manager"
-  "os"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -24,7 +23,7 @@ func TestNewConfigReadsEnv(t *testing.T) {
 	for _, tt := range defaultsTests {
 		t.Run(tt.field, func(t *testing.T) {
 			os.Setenv(tt.envKey, tt.customValue)
-			config := manager.NewConfig()
+			config := NewConfig()
 			st := reflect.ValueOf(config).Elem()
 
 			v := st.FieldByName(tt.field)
@@ -38,7 +37,7 @@ func TestNewConfigReadsEnv(t *testing.T) {
 }
 
 func TestNewConfigDefaults(t *testing.T) {
-	config := manager.NewConfig()
+	config := NewConfig()
 	st := reflect.ValueOf(config).Elem()
 	for _, tt := range defaultsTests {
 		t.Run(tt.field, func(t *testing.T) {
